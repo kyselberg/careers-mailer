@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { sendCareerApplicationEmail } from './email';
 // import { externalLogger } from './external-logger';
+import { getRecipientEmail } from './forms';
 import { logger } from './logger';
 import { formDataSchema } from './validation';
 
@@ -18,6 +19,9 @@ export const submitCareerForm = async (req: express.Request, res: express.Respon
     // Validate form data
     const validatedData = formDataSchema.parse(req.body);
 
+    // Get recipient email based on form ID
+    const recipientEmail = getRecipientEmail(validatedData.formId);
+
     // Check if CV file is provided
     if (!req.file) {
       return res.status(400).json({ error: 'CV file is required' });
@@ -28,6 +32,7 @@ export const submitCareerForm = async (req: express.Request, res: express.Respon
     // Log form submission
     const submissionData = {
       ...validatedData,
+      recipientEmail,
       cvFileName: cvFile.originalname,
       cvSize: cvFile.size,
       submittedAt: new Date().toISOString(),
@@ -46,17 +51,19 @@ export const submitCareerForm = async (req: express.Request, res: express.Respon
         size: cvFile.size,
       },
       submittedAt: submissionData.submittedAt,
+      recipientEmail,
     });
 
     // Send external notification
-    const externalMessage = `🎯 New Career Application!\n\n👤 Name: ${validatedData.name}\n📧 Email: ${validatedData.email}\n📄 CV: ${cvFile.originalname}\n⏰ ${submissionData.submittedAt}`;
+    const externalMessage = `🎯 New Career Application!\n\n📋 Position: ${validatedData.formId}\n👤 Name: ${validatedData.name}\n📧 Email: ${validatedData.email}\n📄 CV: ${cvFile.originalname}\n⏰ ${submissionData.submittedAt}`;
     // await externalLogger.log(externalMessage);
 
     // Respond with success
     res.status(200).json({
       success: true,
       message: 'Application submitted successfully',
-      submissionId: `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      submissionId: `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      formId: validatedData.formId,
     });
 
   } catch (error: any) {
@@ -69,6 +76,14 @@ export const submitCareerForm = async (req: express.Request, res: express.Respon
           field: err.path.join('.'),
           message: err.message,
         })),
+      });
+    }
+
+    // Handle invalid form ID errors
+    if (error.message && error.message.startsWith('Invalid form ID:')) {
+      return res.status(400).json({
+        error: 'Invalid form ID',
+        message: error.message,
       });
     }
 

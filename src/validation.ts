@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 // Zod validation schemas
 export const formDataSchema = z.object({
+  formId: z.string().min(1, 'Form ID is required'),
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Invalid email format'),
   contactWay: z.string().min(2, 'Contact way must be at least 2 characters').max(200, 'Contact way must be less than 200 characters'),

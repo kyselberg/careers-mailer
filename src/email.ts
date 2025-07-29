@@ -28,18 +28,20 @@ export interface EmailOptions {
     size: number;
   };
   submittedAt: string;
+  recipientEmail: string;
 }
 
 export const sendCareerApplicationEmail = async (options: EmailOptions) => {
-  const { validatedData, cvFile, submittedAt } = options;
+  const { validatedData, cvFile, submittedAt, recipientEmail } = options;
   const transporter = createTransporter();
 
   const mailOptions = {
     from: process.env['SMTP_USER'],
-    to: process.env['RECIPIENT_EMAIL'] || process.env['SMTP_USER'],
-    subject: `New Career Application from ${validatedData.name}`,
+    to: recipientEmail,
+    subject: `New Career Application from ${validatedData.name} - ${validatedData.formId}`,
     html: `
       <h2>New Career Application Received</h2>
+      <p><strong>Position:</strong> ${validatedData.formId}</p>
       <p><strong>Name:</strong> ${validatedData.name}</p>
       <p><strong>Email:</strong> ${validatedData.email}</p>
       <p><strong>Preferred Contact Way:</strong> ${validatedData.contactWay}</p>
@@ -62,7 +64,8 @@ export const sendCareerApplicationEmail = async (options: EmailOptions) => {
   const emailResult = await transporter.sendMail(mailOptions);
   logger.info('Email sent successfully', {
     messageId: emailResult.messageId,
-    to: mailOptions.to,
+    to: recipientEmail,
+    formId: validatedData.formId,
     applicantName: validatedData.name,
   });
 
