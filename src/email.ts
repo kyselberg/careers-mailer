@@ -1,24 +1,7 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import { logger } from './logger';
 import type { FormData } from './validation';
 
-export const createTransporter = () => {
-  const config = {
-    host: process.env['SMTP_HOST'] || 'smtp.gmail.com',
-    port: parseInt(process.env['SMTP_PORT'] || '587'),
-    secure: process.env['SMTP_SECURE'] === 'true',
-    auth: {
-      user: process.env['SMTP_USER'],
-      pass: process.env['SMTP_PASS'],
-    },
-  };
-
-  if (!config.auth.user || !config.auth.pass) {
-    throw new Error('SMTP credentials not provided in environment variables');
-  }
-
-  return nodemailer.createTransport(config);
-};
 
 export interface EmailOptions {
   validatedData: FormData;
@@ -33,10 +16,9 @@ export interface EmailOptions {
 
 export const sendCareerApplicationEmail = async (options: EmailOptions) => {
   const { validatedData, cvFile, submittedAt, recipientEmail } = options;
-  const transporter = createTransporter();
 
-  const mailOptions = {
-    from: process.env['SMTP_USER'],
+  const emailResult = await sgMail.send({
+    from: process.env['FROM_EMAIL'] || '',
     to: recipientEmail,
     subject: `New Career Application from ${validatedData.name} - ${validatedData.formId}`,
     html: `
@@ -54,16 +36,15 @@ export const sendCareerApplicationEmail = async (options: EmailOptions) => {
     `,
     attachments: [
       {
-        filename: cvFile.originalname,
-        content: cvFile.buffer,
-        contentType: 'application/pdf',
-      },
-    ],
-  };
+        content: cvFile.buffer.toString('base64'),
+        filename: "attachment.pdf",
+        type: "application/pdf",
+        disposition: "attachment"
+      }
+    ]
+  });
 
-  const emailResult = await transporter.sendMail(mailOptions);
   logger.info('Email sent successfully', {
-    messageId: emailResult.messageId,
     to: recipientEmail,
     formId: validatedData.formId,
     applicantName: validatedData.name,

@@ -1,3 +1,4 @@
+import sgMail from '@sendgrid/mail';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -16,6 +17,9 @@ dotenv.config();
 // Express app setup
 const app = express();
 const PORT = process.env['PORT'] || 3000;
+
+console.log(process.env['SENDGRID_API_KEY']);
+sgMail.setApiKey(process.env['SENDGRID_API_KEY'] || '');
 
 // Rate limiting - 10 requests per 15 minutes per IP
 const limiter = rateLimit({
@@ -37,10 +41,35 @@ app.use(morgan('combined', {
   }
 }));
 
-// CORS configuration for subsub.io
+// CORS configuration - allow multiple origins including null for file:// testing
 app.use(cors({
-  origin: ['https://subsub.io'],
-  methods: ['POST'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    // and from null origin (file:// protocol)
+    if (!origin || origin === 'null') {
+      return callback(null, true);
+    }
+
+    // Allow specific origins
+    const allowedOrigins = [
+      'https://subsub.io',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001'
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // For development, you might want to allow all origins
+    // Uncomment the line below for development only:
+    // return callback(null, true);
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['POST', 'GET', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
   credentials: false,
 }));
