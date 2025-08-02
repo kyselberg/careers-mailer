@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@db": ["./src/db/index.ts"],
+      "@db/*": ["./src/db/*"],
+      "@routes/*": ["./src/routes/*"]
+    },
+
+
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */

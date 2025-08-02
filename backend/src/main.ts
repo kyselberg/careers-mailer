@@ -8,7 +8,9 @@ import morgan from 'morgan';
 
 // Import our modules
 import { globalErrorHandler, healthCheck, notFound, submitCareerForm } from './controllers';
+import { initializeDatabase } from './db/init';
 import { logger } from './logger';
+import router from './routes';
 import { upload } from './upload';
 
 // Load environment variables
@@ -81,6 +83,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', healthCheck);
 app.post('/submit-career-form', upload.single('cv'), submitCareerForm);
 
+app.use('/api', router);
+
 // 404 handler
 app.use(notFound);
 
@@ -88,16 +92,24 @@ app.use(notFound);
 app.use(globalErrorHandler);
 
 // Start server
-app.listen(PORT, () => {
-  logger.info(`🚀 Careers submission server running on port ${PORT}`);
-  logger.info('📧 Email configuration:', {
-    host: process.env['SMTP_HOST'] || 'smtp.gmail.com',
-    port: process.env['SMTP_PORT'] || '587',
-    user: process.env['SMTP_USER'] ? '***configured***' : '❌ NOT SET',
-  });
-  logger.info('📱 External logging:', {
-    telegram: process.env['TELEGRAM_BOT_TOKEN'] && process.env['TELEGRAM_CHAT_ID'] ? '✅ Configured' : '❌ Not configured',
-  });
+app.listen(PORT, async () => {
+  try {
+    // Initialize database on startup
+    await initializeDatabase();
+
+    logger.info(`🚀 Careers submission server running on port ${PORT}`);
+    logger.info('📧 Email configuration:', {
+      host: process.env['SMTP_HOST'] || 'smtp.gmail.com',
+      port: process.env['SMTP_PORT'] || '587',
+      user: process.env['SMTP_USER'] ? '***configured***' : '❌ NOT SET',
+    });
+    logger.info('📱 External logging:', {
+      telegram: process.env['TELEGRAM_BOT_TOKEN'] && process.env['TELEGRAM_CHAT_ID'] ? '✅ Configured' : '❌ Not configured',
+    });
+  } catch (error) {
+    logger.error('Failed to initialize database:', error);
+    process.exit(1);
+  }
 });
 
 export default app;

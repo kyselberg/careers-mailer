@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { sendCareerApplicationEmail } from './email';
 // import { externalLogger } from './external-logger';
 import { getRecipientEmail } from './forms';
+import { CustomError } from './lib/custom-error';
 import { logger } from './logger';
 import { formDataSchema } from './validation';
 
@@ -105,6 +106,13 @@ export const notFound = (req: express.Request, res: express.Response) => {
 
 // Global error handler controller
 export const globalErrorHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  try {
+    if (err instanceof CustomError) {
+      res.status(err.statusCode).json({ msg: err.message });
+    } else {
+      res.status(500).json({ msg: 'Internal server error' });
+    }
+  } catch (error) {
+    res.status(500).json({ msg: 'Internal server error' });
+  }
 };
