@@ -35,7 +35,7 @@ const limiter = rateLimit({
 
 // Middleware
 app.use(helmet());
-app.use(limiter);
+process.env['NODE_ENV'] === 'production' && app.use(limiter);
 app.use(morgan('combined', {
   stream: {
     write: (message: any) => logger.info(message.trim())

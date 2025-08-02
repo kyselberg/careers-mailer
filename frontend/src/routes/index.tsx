@@ -1,8 +1,12 @@
+import { AddEmailModal } from "@/components/AddEmailModal";
 import { EmailCard } from "@/components/EmailCard";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { useCreateEmail } from "@/hooks/useCreateEmail";
 import { useEmails } from "@/hooks/useEmails";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -10,6 +14,12 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { data: emails, isLoading, error } = useEmails();
+  const createEmailMutation = useCreateEmail();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateEmail = async (data: { title: string; email: string }) => {
+    await createEmailMutation.mutateAsync(data);
+  };
 
   if (isLoading) {
     return (
@@ -47,11 +57,20 @@ function Index() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Email Submissions</h1>
-          <p className="text-gray-600">
-            {emails?.length || 0} email{emails?.length !== 1 ? 's' : ''} submitted
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Email Submissions</h1>
+            <p className="text-gray-600">
+              {emails?.length || 0} email{emails?.length !== 1 ? 's' : ''} submitted
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Email
+          </Button>
         </div>
 
         {/* Email Cards Grid */}
@@ -88,6 +107,14 @@ function Index() {
 
       {/* Toast notifications */}
       <Toaster />
+
+      {/* Add Email Modal */}
+      <AddEmailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateEmail}
+        isLoading={createEmailMutation.isPending}
+      />
     </div>
   );
 }
