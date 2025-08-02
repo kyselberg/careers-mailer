@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
+import { logger } from '../logger';
 
 export const createEmailSchema = z.object({
   title: z.string({error: 'Title is required'}).min(1).max(100),
@@ -7,7 +8,7 @@ export const createEmailSchema = z.object({
 });
 
 export const deleteEmailSchema = z.object({
-  id: z.number(),
+  id: z.coerce.number(),
 });
 
 export const validateEmail = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,6 +21,8 @@ export const validateEmail = async (req: Request, res: Response, next: NextFunct
 
 export const validateDeleteEmail = async (req: Request, res: Response, next: NextFunction) => {
   const { error } = await deleteEmailSchema.safeParseAsync(req.params);
+  logger.info(`Validation result: ${error ? 'error' : 'success'}`);
+  logger.info(`Data: ${JSON.stringify(req.params)}`);
   if (error) {
     return next(new Error(error.message));
   }
