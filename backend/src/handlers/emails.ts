@@ -1,7 +1,8 @@
 import { db } from '@db';
-import { emailsTable } from '@db/emails';
+import { emailsTable } from '@schemas/emails.sql';
 import { eq } from 'drizzle-orm';
 import { type NextFunction, type Request, type Response } from 'express';
+import crypto from 'node:crypto';
 import { CustomError } from '../lib/custom-error';
 
 const getAllEmails = async (req: Request, res: Response, next: NextFunction) => {
@@ -35,7 +36,7 @@ const deleteEmail = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export {
-    createEmail,
-    deleteEmail,
-    getAllEmails
+  createEmail,
+  deleteEmail,
+  getAllEmails
 };

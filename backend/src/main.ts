@@ -8,7 +8,6 @@ import morgan from 'morgan';
 
 // Import our modules
 import { globalErrorHandler, healthCheck, notFound, submitCareerForm } from './controllers';
-import { initializeDatabase } from './db/init';
 import { logger } from './logger';
 import router from './routes';
 import { upload } from './upload';
@@ -94,8 +93,6 @@ app.use(globalErrorHandler);
 // Start server
 app.listen(PORT, async () => {
   try {
-    // Initialize database on startup
-    await initializeDatabase();
 
     logger.info(`🚀 Careers submission server running on port ${PORT}`);
     logger.info('📧 Email configuration:', {

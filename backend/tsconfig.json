@@ -4,7 +4,8 @@
     "paths": {
       "@db": ["./src/db/index.ts"],
       "@db/*": ["./src/db/*"],
-      "@routes/*": ["./src/routes/*"]
+      "@routes/*": ["./src/routes/*"],
+      "@schemas/*": ["./src/schemas/*"]
     },
 
 
