@@ -1,9 +1,12 @@
 import { AddEmailModal } from "@/components/AddEmailModal";
+import { DeleteEmailModal } from "@/components/DeleteEmailModal";
 import { EmailCard } from "@/components/EmailCard";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { useCreateEmail } from "@/hooks/useCreateEmail";
+import { useDeleteEmail } from "@/hooks/useDeleteEmail";
 import { useEmails } from "@/hooks/useEmails";
+import type { Email } from "@/types/email";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
@@ -15,10 +18,29 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { data: emails, isLoading, error } = useEmails();
   const createEmailMutation = useCreateEmail();
+  const deleteEmailMutation = useDeleteEmail();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [emailToDelete, setEmailToDelete] = useState<Email | null>(null);
 
   const handleCreateEmail = async (data: { title: string; email: string }) => {
     await createEmailMutation.mutateAsync(data);
+  };
+
+  const handleDeleteEmail = (email: Email) => {
+    setEmailToDelete(email);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (emailToDelete) {
+      await deleteEmailMutation.mutateAsync(emailToDelete.id);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setEmailToDelete(null);
   };
 
   if (isLoading) {
@@ -77,7 +99,7 @@ function Index() {
         {emails && emails.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {emails.map((email) => (
-              <EmailCard key={email.id} email={email} />
+              <EmailCard key={email.id} email={email} onDelete={handleDeleteEmail} />
             ))}
           </div>
         ) : (
@@ -114,6 +136,15 @@ function Index() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateEmail}
         isLoading={createEmailMutation.isPending}
+      />
+
+      {/* Delete Email Modal */}
+      <DeleteEmailModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        email={emailToDelete}
+        isLoading={deleteEmailMutation.isPending}
       />
     </div>
   );
