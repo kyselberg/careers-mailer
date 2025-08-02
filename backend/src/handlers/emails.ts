@@ -16,9 +16,9 @@ const getAllEmails = async (req: Request, res: Response, next: NextFunction) => 
 
 const createEmail = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email } = req.body;
+    const { title, email } = req.body;
     const hash = crypto.randomUUID();
-    const result = await db.insert(emailsTable).values({ email, hash }).returning();
+    const result = await db.insert(emailsTable).values({ title, email, hash }).returning();
     res.json(result);
   } catch (error) {
     next(new CustomError('Failed to create email', 500));
