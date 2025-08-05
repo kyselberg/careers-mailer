@@ -11,6 +11,7 @@ const createEmail = async (data: CreateEmailData): Promise<unknown> => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('auth-token')}`,
     },
     body: JSON.stringify(data),
   });

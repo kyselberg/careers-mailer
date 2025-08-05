@@ -19,6 +19,7 @@ import { EmailsService } from './emails.service';
 export class EmailsController {
   constructor(private readonly emailsService: EmailsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @CurrentUser() user: User,

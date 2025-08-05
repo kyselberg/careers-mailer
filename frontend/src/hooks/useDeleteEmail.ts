@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 const deleteEmail = async (id: number): Promise<void> => {
   const response = await fetch(`/api/emails/${id}`, {
     method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('auth-token')}`,
+    },
   });
 
   if (!response.ok) {

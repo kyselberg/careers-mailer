@@ -8,11 +8,12 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findOne(email: string): Promise<User | null> {
-    return await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         email,
       },
     });
+    return user;
   }
 
   async create(email: string, password: string) {
