@@ -8,6 +8,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { Email, User } from '@prisma/client';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateEmailDto } from './dto/create-email.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
@@ -18,31 +20,38 @@ export class EmailsController {
   constructor(private readonly emailsService: EmailsService) {}
 
   @Post()
-  async create(@Body() createEmailDto: CreateEmailDto) {
-    return await this.emailsService.create(createEmailDto);
+  async create(
+    @CurrentUser() user: User,
+    @Body() createEmailDto: CreateEmailDto,
+  ) {
+    return await this.emailsService.create(createEmailDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.emailsService.findAll();
+  async findAll(@CurrentUser() user: User): Promise<Email[]> {
+    return await this.emailsService.findAll(user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.emailsService.findOne(+id);
+  async findOne(@CurrentUser() user: User, @Param('id') id: string) {
+    return await this.emailsService.findOne(id, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmailDto: UpdateEmailDto) {
-    return this.emailsService.update(+id, updateEmailDto);
+  async update(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() updateEmailDto: UpdateEmailDto,
+  ) {
+    return await this.emailsService.update(id, updateEmailDto, user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.emailsService.remove(+id);
+  async remove(@CurrentUser() user: User, @Param('id') id: string) {
+    return await this.emailsService.remove(id, user);
   }
 }

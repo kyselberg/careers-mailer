@@ -7,11 +7,22 @@ import { useCreateEmail } from "@/hooks/useCreateEmail";
 import { useDeleteEmail } from "@/hooks/useDeleteEmail";
 import { useEmails } from "@/hooks/useEmails";
 import type { Email } from "@/types/email";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: ({ context, location }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({
+        to: '/login',
+        search: {
+          // Save current location for redirect after login
+          redirect: location.href,
+        },
+      })
+    }
+  },
   component: Index,
 });
 
