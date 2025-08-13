@@ -16,7 +16,7 @@ export class SubmissionsService {
     file: Express.Multer.File,
     createSubmissionDto: CreateSubmissionDto,
   ) {
-    console.log(`Sending submission email`,);
+    console.log(`Sending submission email`);
     const email = await this.emailsService.getEmailByFormId(
       createSubmissionDto.formId,
     );
@@ -26,7 +26,6 @@ export class SubmissionsService {
       createSubmissionDto.formId,
     );
     console.log(`Position Title: ${positionTitle}`);
-
 
     await this.sendgridService.sendEmail({
       from: process.env['FROM_EMAIL'] || '',
