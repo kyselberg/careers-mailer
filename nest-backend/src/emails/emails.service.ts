@@ -111,4 +111,32 @@ export class EmailsService {
       },
     });
   }
+
+  async getEmailByFormId(formId: string) {
+    const email = await this.prisma.email.findUnique({
+      where: {
+        hash: formId,
+      },
+    });
+
+    if (!email) {
+      throw new NotFoundException('Email not found');
+    }
+
+    return email.email;
+  }
+
+  async getEmailPositionTitle(formId: string) {
+    const email = await this.prisma.email.findUnique({
+      where: {
+        hash: formId,
+      },
+    });
+
+    if (!email) {
+      throw new NotFoundException('Email not found');
+    }
+
+    return email.title;
+  }
 }
